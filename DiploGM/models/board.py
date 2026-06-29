@@ -11,6 +11,7 @@ from rapidfuzz.distance import DamerauLevenshtein
 
 from DiploGM.models.adjacency import Terrain
 from DiploGM.models.order import NMR, Move, Hold, Support, ConvoyTransport, Core, Transform, RetreatMove, RetreatDisband
+from DiploGM.models.poll import GameEndPoll
 from DiploGM.models.unit import Unit, UnitType, DPAllocation
 from DiploGM.models.turn import Turn
 from DiploGM.utils.sanitise import parse_variant_path, remove_special_characters, sanitise_name, simple_player_name
@@ -560,3 +561,45 @@ class Board:
         }
 
         return json.dumps(export, indent=2)
+    
+    def add_new_poll(self, poll: GameEndPoll):
+        if "polls" not in self.data:
+            self.data["polls"] = {}
+        self.data["polls"][poll.id] = poll
+
+    def set_active_poll(self, poll: Optional[GameEndPoll | str]):
+        match poll:
+            case None | GameEndPoll():
+                self.data["active_poll"] = poll
+            case str():
+                self.data["active_poll"] = self.data["polls"][self._disambiguate_poll(poll)]
+            case _:
+                raise ValueError
+    
+    def get_active_poll(self) -> GameEndPoll:
+        active = self.data["active_poll"]
+        if active is None:
+            raise ValueError("There is no active poll")
+        return active
+
+    def delete_poll(self, poll_id: str):
+        polls: dict[str, GameEndPoll] = self.data["polls"]
+        clean_id = self._disambiguate_poll(poll_id)
+        del polls[clean_id]
+        if self.data["active_poll"].id == clean_id:
+            self.set_active_poll(None)
+
+    def get_poll(self, poll_id: str) -> GameEndPoll:
+        clean = self._disambiguate_poll(poll_id)
+        return self.data["polls"][clean]
+
+    def _disambiguate_poll(self, poll_id: str) -> str:
+        polls: dict[str, GameEndPoll] = self.data["polls"]
+        matches = [poll_id for poll_id in polls.keys() if poll_id.startswith(poll_id)]
+        if len(matches) == 0:
+            raise ValueError(f"No such poll: {poll_id}")
+        elif len(matches) > 1:
+            raise ValueError(f"Multiple such polls: {poll_id}: {' '.join(matches)}")
+        else:
+            return matches[0]
+        

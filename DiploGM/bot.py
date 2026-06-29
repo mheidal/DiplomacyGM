@@ -95,6 +95,8 @@ class DiploGM(commands.Bot):
 
     async def load_diplogm_extension(self, name: str, *, package: Optional[str] = None):
         """Loads a DiploGM cog."""
+        logger.info(f"Loading extension: {name}. Traceback:")
+        # traceback.print_stack()
         await self.load_extension(f"{_EXTENSION_PATH}{name}", package=package)
 
     async def unload_diplogm_extension(self, name: str, *, package: Optional[str] = None):
@@ -113,7 +115,6 @@ class DiploGM(commands.Bot):
             # ignore private files e.g. '_private.py'
             if not filename.endswith(".py") or filename.startswith("_"):
                 continue
-
             yield f"DiploGM.cogs.{filename[:-3]}"
 
     # add logging to base extension functions

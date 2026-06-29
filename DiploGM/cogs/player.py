@@ -1,7 +1,7 @@
 """Cog for player commands. Each commands contains a parameter determinging which player sent
 the command, or None if it was done by a GM."""
 import logging
-from typing import Callable, Iterable
+from typing import Callable, Iterable, Optional
 
 import discord
 from discord.ext import commands
@@ -10,6 +10,7 @@ from DiploGM import config
 from DiploGM import perms
 from DiploGM.db.database import get_connection
 from DiploGM.errors import MapRenderError
+from DiploGM.models.poll import Vote
 from DiploGM.parse_order import parse_order, parse_remove_order
 from DiploGM.utils import get_orders, log_command, parse_season, send_message_and_file
 from DiploGM.utils.open_cores import get_open_core_text
@@ -519,6 +520,51 @@ class PlayerCog(commands.Cog):
             title=f"{player_role.name} Press Channel Directory",
             message=out
         )
+
+    @commands.command(brief="Cast a vote on the active poll")
+    @perms.player("Cast a vote")
+    async def cast_vote(self, ctx: commands.Context, vote_text: str, player: Optional[Player]):
+        if player is None:
+            raise ValueError("Must be a player to vote")
+        IN_FAVOR = [
+            "yes",
+            "yay",
+            "yea",
+            "y",
+            "in favor",
+            "for",
+        ]
+        AGAINST = [
+            "nay",
+            "n",
+            "against",
+        ]
+        assert ctx.guild is not None
+        board = manager.get_board(ctx.guild.id)
+        poll = board.get_active_poll()
+        if poll is None:
+            raise ValueError("There is no active poll!")
+        vote = None
+        if (clean := vote_text.lower()) in IN_FAVOR:
+            vote = Vote.IN_FAVOR
+        elif clean in AGAINST:
+            vote = Vote.AGAINST
+        if vote is None:
+            raise ValueError(f"Invalid vote: {vote_text}")
+        poll.vote(player, vote)
+
+    @commands.command(brief="Remove your vote from the active poll")
+    @perms.player("Remove vote")
+    async def remove_vote(self, ctx: commands.Context, vote_text: str, player: Optional[Player]):
+        if player is None:
+            raise ValueError("Must be a player to vote")
+        assert ctx.guild is not None
+        board = manager.get_board(ctx.guild.id)
+        poll = board.get_active_poll()
+        if poll is None:
+            raise ValueError("There is no active poll!")
+        poll.remove_vote(player)
+
 
 async def setup(bot):
     """Setup for the player cog."""
