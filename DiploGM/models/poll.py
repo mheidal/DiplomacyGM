@@ -38,6 +38,9 @@ class GameEndPoll:
     def set_public(self, value: bool):
         self.public = value
 
+    def set_description(self, desc: Optional[str]):
+        self.description = desc
+
     def get_players_to_vote(self, player_restriction: Optional[Player], full_player_set: Optional[set[Player]] = None) -> dict[Player, Vote]:
         if player_restriction is not None:
             return {

@@ -116,7 +116,6 @@ def player(description: str = "run this command"):
         async def wrapper(self, ctx: commands.Context, player: Player | None):
             # manager should live on bot or cog; here I assume cog
             player = require_player_by_context(ctx, description)
-
             # Inject the resolved player into the *real* function call
             return await func(self, ctx, player)
 

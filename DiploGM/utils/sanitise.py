@@ -152,6 +152,11 @@ def parse_variant_path(variant: str, as_filename: bool = True, return_parent: bo
 
 def remove_prefix(ctx: commands.Context) -> str:
     """Removes the command prefix from the message content."""
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"{ctx.message.content}")
+    logger.info(f"{ctx.prefix}")
+    logger.info(ctx.invoked_with)
     return ctx.message.content.removeprefix(f"{ctx.prefix}{ctx.invoked_with}").strip()
 
 def get_colour_option(board, args) -> str | None:

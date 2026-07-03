@@ -553,17 +553,17 @@ class PlayerCog(commands.Cog):
             raise ValueError(f"Invalid vote: {vote_text}")
         poll.vote(player, vote)
 
-    @commands.command(brief="Remove your vote from the active poll")
-    @perms.player("Remove vote")
-    async def remove_vote(self, ctx: commands.Context, vote_text: str, player: Optional[Player]):
-        if player is None:
-            raise ValueError("Must be a player to vote")
-        assert ctx.guild is not None
-        board = manager.get_board(ctx.guild.id)
-        poll = board.get_active_poll()
-        if poll is None:
-            raise ValueError("There is no active poll!")
-        poll.remove_vote(player)
+    # @commands.command(brief="Remove your vote from the active poll")
+    # @perms.player("Remove vote")
+    # async def remove_vote(self, ctx: commands.Context, vote_text: str, player: Optional[Player]):
+    #     if player is None:
+    #         raise ValueError("Must be a player to vote")
+    #     assert ctx.guild is not None
+    #     board = manager.get_board(ctx.guild.id)
+    #     poll = board.get_active_poll()
+    #     if poll is None:
+    #         raise ValueError("There is no active poll!")
+    #     poll.remove_vote(player)
 
 
 async def setup(bot):

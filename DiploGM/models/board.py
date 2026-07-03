@@ -576,13 +576,14 @@ class Board:
             case _:
                 raise ValueError
     
-    def get_active_poll(self) -> GameEndPoll:
-        active = self.data["active_poll"]
-        if active is None:
-            raise ValueError("There is no active poll")
-        return active
+    def get_active_poll(self) -> Optional[GameEndPoll]:
+        if "active_poll" not in self.data:
+            self.data["active_poll"] = None
+        return self.data["active_poll"]
 
     def delete_poll(self, poll_id: str):
+        if "polls" not in self.data:
+            self.data["polls"] = {}
         polls: dict[str, GameEndPoll] = self.data["polls"]
         clean_id = self._disambiguate_poll(poll_id)
         del polls[clean_id]
@@ -591,9 +592,13 @@ class Board:
 
     def get_poll(self, poll_id: str) -> GameEndPoll:
         clean = self._disambiguate_poll(poll_id)
+        if "polls" not in self.data:
+            self.data["polls"] = {}
         return self.data["polls"][clean]
 
     def _disambiguate_poll(self, poll_id: str) -> str:
+        if "polls" not in self.data:
+            self.data["polls"] = {}
         polls: dict[str, GameEndPoll] = self.data["polls"]
         matches = [poll_id for poll_id in polls.keys() if poll_id.startswith(poll_id)]
         if len(matches) == 0:
